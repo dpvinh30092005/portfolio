@@ -1,0 +1,853 @@
+/* Hallmark · genre: modern-minimal · design-system: design.md · designed-as-app
+ * theme: custom "Extension lines" — light paper · grotesk-sans display · warm accent 32°
+ *   paper oklch(97.6% 0.005 95) · ink oklch(21% 0.011 250)
+ *   guide oklch(72% 0.055 245) · 朱 oklch(52% 0.19 32) inherited, under 3%
+ *   display Space Grotesk · body Be Vietnam Pro · mono JetBrains Mono
+ *   (all three verified for the `vietnamese` subset before selection)
+ * macrostructure: 19 Map/Diagram (profile) · 14 Narrative Workflow (project)
+ * nav: N3 side-rail · footer: Ft5 statement
+ * enrichment: none — the grid is drawn, not illustrated
+ * motion: edge-projection · stage-advance   (2 primitives)
+ *
+ * Replaces an atmospheric ink-wash system.
+ *
+ * The grid behind the page is not declared anywhere. Every block projects its
+ * four edges across the sheet (Grid.tsx), so the cells you see are consequences
+ * of the layout rather than a backdrop it happens to sit on. Two earlier passes
+ * are worth naming so nobody re-proposes them: an 8px quadrille mesh (notebook
+ * paper — it competed with the type instead of measuring it) and a 12-column
+ * guide set (correct, and borrowed from every framework that ships one).
+ *
+ * The drawings side was cut. The hobby was taking attention from the one thing
+ * a hiring reader came to assess.
+ *
+ * pre-emit critique: P5 H5 E4 S5 R5 V5
+ */
+
+@import "./tokens.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  overflow-x: clip;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* `figure` carries a UA `margin: 1em 40px`. On a page whose whole premise is
+   that everything lands on an 8px cell, an unreset 40px is both off-grid and,
+   at 320px, enough to push a drawing off the side of the sheet. */
+figure {
+  margin: 0;
+}
+
+::selection {
+  background: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+:focus-visible {
+  outline: var(--rule-solid) solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- the sheet */
+
+.sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.page {
+  position: relative;
+  z-index: 1;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+}
+
+.skip {
+  position: absolute;
+  left: -9999px;
+  top: 0;
+  background: var(--color-ink);
+  color: var(--color-paper);
+  padding: var(--space-2xs) var(--space-xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  z-index: 40;
+}
+
+.skip:focus {
+  left: var(--space-2xs);
+  top: var(--space-2xs);
+}
+
+/* ------------------------------------------------------------ N3 side-rail */
+
+.rail {
+  position: fixed;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: var(--space-lg);
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-xs) 0;
+  border-right: var(--rule-hair) solid var(--color-rule-2);
+  background: color-mix(in oklab, var(--color-paper) 88%, transparent);
+  backdrop-filter: blur(2px);
+}
+
+.rail-id {
+  appearance: none;
+  border: var(--rule-hair) solid var(--color-rule-2);
+  background: var(--color-paper);
+  padding: 0;
+  width: var(--space-sm);
+  height: var(--space-sm);
+  cursor: pointer;
+  overflow: hidden;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.rail-id img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: grayscale(1) contrast(1.05);
+}
+
+.rail-id:hover {
+  border-color: var(--color-ink);
+}
+
+.rail-sides {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.rail-side {
+  appearance: none;
+  background: none;
+  border: 0;
+  padding: var(--space-3xs) 0;
+  cursor: pointer;
+  color: var(--color-ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2xs);
+  transition: color var(--dur-fast) var(--ease-out);
+}
+
+.rail-name {
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  text-transform: uppercase;
+}
+
+.rail-side:hover {
+  color: var(--color-ink);
+}
+
+.rail-side[aria-current="page"] {
+  color: var(--color-accent);
+}
+
+/* The active side gets a drawn tick in the rule, not a pill or a glow — the
+   vocabulary of a drawing set is marks, not chrome. */
+.rail-side[aria-current="page"] .rail-ref::after {
+  content: "";
+  position: absolute;
+  right: calc(-1 * var(--space-xs) - 1px);
+  top: 50%;
+  width: var(--space-2xs);
+  height: var(--rule-solid);
+  background: var(--color-accent);
+}
+
+.rail-ref {
+  position: relative;
+}
+
+.rail-lang {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.lang-btn {
+  appearance: none;
+  background: none;
+  border: var(--rule-hair) solid transparent;
+  color: var(--color-ink-3);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  padding: 2px var(--space-3xs);
+  cursor: pointer;
+  transition:
+    color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.lang-btn:hover {
+  color: var(--color-ink);
+}
+
+.lang-btn[aria-pressed="true"] {
+  color: var(--color-ink);
+  border-color: var(--color-rule-2);
+}
+
+/* ------------------------------------------------------------------ layout */
+
+main {
+  flex: 1;
+  margin-left: var(--space-lg);
+}
+
+.side {
+  padding: var(--space-xl) var(--page-gutter) var(--space-2xl);
+  max-width: 1400px;
+}
+
+/* Section label — mono, tracked, with a drawn square. The square is the pixel
+   register: a bullet that is literally one cell. */
+.label {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin: 0 0 var(--space-sm);
+}
+
+.label::before {
+  content: "";
+  width: var(--cell);
+  height: var(--cell);
+  background: var(--color-accent);
+  flex: none;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-style: normal;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+  overflow-wrap: anywhere;
+  min-width: 0;
+  margin: 0;
+}
+
+p {
+  margin: 0;
+}
+
+/* --------------------------------------------------- 19 · Map / Diagram (home) */
+
+.map-head {
+  margin-bottom: var(--space-xl);
+}
+
+.map-ref {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-ink-3);
+  text-transform: uppercase;
+  margin-bottom: var(--space-xs);
+}
+
+.map-name {
+  font-size: var(--text-display);
+  margin-bottom: var(--space-xs);
+}
+
+.map-role {
+  font-family: var(--font-mono);
+  font-size: var(--text-xl);
+  color: var(--color-accent);
+  margin-bottom: var(--space-2xs);
+}
+
+.map-place {
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+}
+
+/* Status is a drawn box on the sheet, aligned to the cell. */
+.map-open {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  margin-top: var(--space-sm);
+  padding: var(--space-2xs) var(--space-xs);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  background: var(--color-paper-2);
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-2);
+}
+
+.map-open::before {
+  content: "";
+  width: var(--cell);
+  height: var(--cell);
+  background: var(--color-accent);
+  flex: none;
+}
+
+/* The diagram itself.
+   Twelve columns and a 24px gutter — the same numbers Grid.tsx draws its guides
+   from, both read from tokens. Blocks are addressed by span rather than stacked,
+   which is the whole point of this macrostructure: the reader sees a layout, not
+   a column. */
+/* Two unequal tracks, alternating which side carries the wide block.
+   Not twelve equal columns: equal columns project equally-spaced lines, and an
+   evenly-ruled sheet says nothing about what is on it. Unequal tracks that swap
+   sides produce an irregular set of cells whose spacing is a consequence of the
+   content — which is the only reason to draw the lines at all. */
+.map-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr);
+  gap: var(--space-md) var(--col-gap);
+}
+
+/* Panels, not bare blocks. A visible cell edge is the point of the reference —
+   the block occupies its span and says so. */
+.node {
+  border: var(--rule-hair) solid var(--color-rule-2);
+  border-top: var(--rule-solid) solid var(--color-ink);
+  background: color-mix(in oklab, var(--color-paper) 72%, transparent);
+  padding: var(--space-sm);
+  min-width: 0;
+}
+
+.node--intro {
+  grid-column: 1;
+}
+
+.node--stack {
+  grid-column: 2;
+}
+
+/* The wide block swaps to the right on the second row, so the vertical
+   projection from the intro's right edge and the one from the sides' left edge
+   land at different places — the cells stop being a repeat of each other. */
+.node--reach {
+  grid-column: 1;
+}
+
+.node--sides {
+  grid-column: 2 / span 1;
+}
+
+.node-ref {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-ink-3);
+  text-transform: uppercase;
+  margin-bottom: var(--space-xs);
+}
+
+.intro p {
+  max-width: var(--measure);
+  color: var(--color-ink-2);
+  margin-bottom: var(--space-sm);
+}
+
+.intro p:last-child {
+  margin-bottom: 0;
+}
+
+.intro strong {
+  color: var(--color-ink);
+  font-weight: 600;
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs);
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.chip {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  padding: var(--space-3xs) var(--space-2xs);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  background: var(--color-paper-2);
+  color: var(--color-ink-2);
+}
+
+.reach {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  align-items: flex-start;
+}
+
+.reach a {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+  text-decoration: none;
+  border-bottom: var(--rule-hair) solid var(--color-rule-2);
+  padding-bottom: 2px;
+  transition: border-color var(--dur-fast) var(--ease-out);
+}
+
+.reach a:hover {
+  border-color: var(--color-accent);
+}
+
+.side-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(260px, 100%), 1fr));
+  gap: var(--space-sm);
+}
+
+.side-card {
+  appearance: none;
+  text-align: left;
+  cursor: pointer;
+  background: var(--color-paper-2);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  padding: var(--space-sm);
+  min-width: 0;
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.side-card:hover {
+  background: var(--color-paper-3);
+  border-color: var(--color-ink-3);
+}
+
+.side-card-t {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-2xl);
+  letter-spacing: var(--tracking-display);
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2xs);
+  margin-bottom: var(--space-2xs);
+}
+
+.side-card-ref {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.side-card-d {
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+/* ------------------------------------------------- buttons (CTA voice) */
+
+.btn {
+  appearance: none;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  padding: var(--space-2xs) var(--space-sm);
+  border: var(--rule-hair) solid var(--color-ink);
+  background: var(--color-ink);
+  color: var(--color-paper);
+  cursor: pointer;
+  text-decoration: none;
+  border-radius: var(--radius);
+  transition:
+    background-color var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out),
+    color var(--dur-fast) var(--ease-out);
+}
+
+.btn:hover,
+.btn.is-hover {
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+  color: var(--color-accent-ink);
+}
+
+.btn:active,
+.btn.is-active {
+  background: var(--color-accent-hot);
+  border-color: var(--color-accent-hot);
+}
+
+.btn[disabled],
+.btn[aria-disabled="true"] {
+  background: var(--color-paper-3);
+  border-color: var(--color-rule-2);
+  color: var(--color-ink-3);
+  cursor: not-allowed;
+}
+
+.btn--ghost {
+  background: transparent;
+  color: var(--color-ink);
+  border-color: var(--color-rule-2);
+}
+
+.btn--ghost:hover,
+.btn--ghost.is-hover {
+  background: transparent;
+  border-color: var(--color-ink);
+  color: var(--color-ink);
+}
+
+/* ------------------------------------ 14 · Narrative Workflow (project) */
+
+.flow-head {
+  margin-bottom: var(--space-2xl);
+  max-width: var(--measure);
+}
+
+.flow-lede {
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-ink-2);
+  margin-top: var(--space-xs);
+}
+
+.stage {
+  display: grid;
+  grid-template-columns: var(--space-xl) minmax(0, 1fr);
+  gap: var(--space-md);
+  padding-block: var(--space-xl);
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.stage:first-of-type {
+  border-top: 0;
+  padding-top: 0;
+}
+
+/* The stage number is the landmark. Sticky so it stays with its own section
+   while the body scrolls past — the reader always knows which stage they're in
+   without a progress bar. */
+.stage-mark {
+  position: sticky;
+  top: var(--space-md);
+  align-self: start;
+}
+
+.stage-no {
+  font-family: var(--font-mono);
+  font-size: var(--text-3xl);
+  font-weight: 500;
+  color: var(--color-accent);
+  line-height: 1;
+}
+
+.stage-name {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  margin-top: var(--space-2xs);
+  writing-mode: vertical-rl;
+}
+
+.stage-h {
+  font-size: var(--text-4xl);
+  max-width: 22ch;
+  margin-bottom: var(--space-md);
+}
+
+.stage-body p {
+  max-width: var(--measure);
+  color: var(--color-ink-2);
+  margin-bottom: var(--space-sm);
+}
+
+.pull {
+  border-left: var(--rule-solid) solid var(--color-accent);
+  padding-left: var(--space-sm);
+  margin-top: var(--space-md);
+  font-family: var(--font-display);
+  font-weight: 500;
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  letter-spacing: var(--tracking-display);
+  max-width: 34ch;
+}
+
+.parts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(280px, 100%), 1fr));
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  list-style: none;
+  padding: 0;
+}
+
+.part {
+  border-top: var(--rule-hair) solid var(--color-rule-2);
+  padding-top: var(--space-xs);
+  min-width: 0;
+}
+
+.part-n {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-xl);
+  letter-spacing: var(--tracking-display);
+  margin-bottom: var(--space-3xs);
+}
+
+.part-d {
+  color: var(--color-ink-2);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.part code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  background: var(--color-paper-3);
+  padding: 1px 4px;
+}
+
+.stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(200px, 100%), 1fr));
+  gap: 0;
+  margin-top: var(--space-md);
+  border-top: var(--rule-solid) solid var(--color-ink);
+  list-style: none;
+  padding: 0;
+}
+
+.stat {
+  padding: var(--space-sm) var(--space-sm) var(--space-sm) 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  min-width: 0;
+}
+
+.stat-n {
+  font-family: var(--font-mono);
+  font-size: var(--text-4xl);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  margin-top: var(--space-2xs);
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+}
+
+.stat-how {
+  margin-top: var(--space-3xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-ink-3);
+}
+
+.note {
+  margin-top: var(--space-sm);
+  font-size: var(--text-sm);
+  color: var(--color-ink-3);
+  max-width: var(--measure);
+}
+
+/* ------------------------------------------------- Ft5 statement footer */
+
+.foot {
+  margin-left: var(--space-lg);
+  border-top: var(--rule-hair) solid var(--color-rule-2);
+  padding: var(--space-md) var(--page-gutter) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  align-items: flex-start;
+}
+
+.foot-statement {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--text-3xl);
+  letter-spacing: var(--tracking-display);
+  max-width: 24ch;
+}
+
+.colophon {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-ink-3);
+  max-width: var(--measure);
+  line-height: var(--leading-snug);
+}
+
+/* ------------------------------------------------------------ responsive */
+
+/* One track under 900px. The projections follow automatically — they are read
+   from wherever the blocks actually land, so there is no second grid definition
+   here to keep in sync. */
+@media (max-width: 900px) {
+  .map-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .node--intro,
+  .node--stack,
+  .node--reach,
+  .node--sides {
+    grid-column: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  /* The rail lies down. A vertical rail on a phone eats a third of the width
+     and puts the sides where a thumb can't reach. */
+  .rail {
+    inset: auto 0 0 0;
+    top: auto;
+    width: auto;
+    flex-direction: row;
+    padding: var(--space-2xs) var(--space-xs);
+    border-right: 0;
+    border-top: var(--rule-hair) solid var(--color-rule-2);
+  }
+
+  .rail-sides {
+    flex-direction: row;
+    gap: var(--space-sm);
+  }
+
+  /* The rail is now a thumb bar, so its targets have to be thumb-sized. At the
+     desktop scale these were 54×37 and the language toggle 23×20 — fine for a
+     pointer, well under the 44px floor for a finger. */
+  .rail-side {
+    flex-direction: row;
+    gap: var(--space-3xs);
+    min-height: 44px;
+    padding-inline: var(--space-2xs);
+  }
+
+  .lang-btn {
+    min-width: 44px;
+    min-height: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .rail-name {
+    writing-mode: horizontal-tb;
+  }
+
+  .rail-side[aria-current="page"] .rail-ref::after {
+    right: auto;
+    left: 50%;
+    top: auto;
+    bottom: calc(-1 * var(--space-3xs));
+    transform: translateX(-50%);
+  }
+
+  .rail-lang {
+    flex-direction: row;
+  }
+
+  main,
+  .foot {
+    margin-left: 0;
+  }
+
+  .foot {
+    padding-bottom: calc(var(--space-lg) + var(--space-md));
+  }
+
+  .side {
+    padding-top: var(--space-md);
+  }
+
+  .stage {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-sm);
+  }
+
+  .stage-mark {
+    position: static;
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2xs);
+  }
+
+  .stage-name {
+    writing-mode: horizontal-tb;
+    margin-top: 0;
+  }
+}
+
+/* ---------------------------------------------------------- reduced motion */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 150ms !important;
+    scroll-behavior: auto !important;
+  }
+}
