@@ -2,13 +2,14 @@ import { useEffect, useState } from "react";
 import Grid from "./Grid";
 import Home from "./pages/Home";
 import Project from "./pages/Project";
+import Notes from "./pages/Notes";
 import { COPY, LINKS, PORTRAIT, SIDE_REF, type Lang } from "./content";
-import { SIDES, useSide } from "./router";
+import { SIDES, useRoute } from "./router";
 import "./styles.css";
 
 export default function App() {
   const [lang, setLang] = useState<Lang>("vi");
-  const [side, go] = useSide();
+  const [{ side, topic }, go] = useRoute();
   const t = COPY[lang];
 
   useEffect(() => {
@@ -71,6 +72,7 @@ export default function App() {
       <main>
         {side === "home" && <Home lang={lang} go={go} />}
         {side === "project" && <Project lang={lang} />}
+        {side === "notes" && <Notes lang={lang} topic={topic} go={go} />}
       </main>
 
       {/* Ft5 statement. One line, and it is the only thing on this page that is

@@ -839,6 +839,1197 @@ p {
   }
 }
 
+/* ------------------------------------------------ 11 · Annotated Plate — 03
+ *
+ * A drawing set: each mechanism is a numbered plate, the figure carries the
+ * shape, the prose beside it carries the reason. Type is annotation on a
+ * drawing, which is the register the retired `art` side introduced.
+ *
+ * The figure sits in a bed one paper step down, so a drawing reads as something
+ * laid ON the sheet rather than printed into it. Every drawn coordinate in
+ * Notes.tsx is a multiple of the 8px cell, which is why the figures line up with
+ * the projected grid instead of floating over it.
+ */
+
+/* Rides on `.side` for the page gutter — the horizontal rhythm belongs to the
+   sheet, not to this page, and duplicating it here would let the three sides
+   drift apart the first time the gutter changes. */
+.notes {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xl);
+}
+
+.notes-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  max-width: var(--measure);
+}
+
+.notes-lede {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  margin: 0;
+}
+
+.notes-h {
+  font-family: var(--font-display);
+  font-size: var(--text-display-s);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-tight);
+  text-wrap: balance;
+  margin: 0;
+}
+
+.notes-intro {
+  font-size: var(--text-xl);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+  margin: 0;
+}
+
+/* ---- one plate ----------------------------------------------------------- */
+
+.plate {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.plate-head {
+  display: grid;
+  grid-template-columns: var(--space-lg) minmax(0, 1fr);
+  gap: var(--space-sm);
+  align-items: baseline;
+}
+
+.plate-no {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.plate-t {
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-snug);
+  text-wrap: balance;
+  margin: 0;
+  max-width: 34ch;
+}
+
+/* ---- the drawing --------------------------------------------------------- */
+
+.plate-fig {
+  margin: 0;
+  background: var(--color-paper-3);
+  border: var(--rule-hair) solid var(--color-rule);
+  padding: var(--space-sm);
+}
+
+.plate-scroll {
+  overflow-x: auto;
+}
+
+.plate-scroll svg {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+  color: var(--color-ink);
+}
+
+.plate-defs {
+  position: absolute;
+  width: 0;
+  height: 0;
+}
+
+.plate-fig figcaption {
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+  margin-top: var(--space-sm);
+  padding-top: var(--space-xs);
+  border-top: var(--rule-hair) solid var(--color-rule);
+  max-width: var(--measure);
+}
+
+.plate-figlabel {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  margin-bottom: var(--space-3xs);
+}
+
+/* ---- drawing marks ------------------------------------------------------- */
+
+/* The legend.
+   `data-c` on any mark — or on a <g> wrapping several — sets --c, and every
+   neutral mark below reads --c with its own ink as the fallback. So a figure
+   that says nothing about role is byte-identical to what it was before this
+   existed, and a figure that does say something recolours the box, its arrow,
+   its label and its icon from one attribute.
+   See tokens.css for why four roles and no more. */
+.topic [data-c="ok"] {
+  --c: var(--fig-ok);
+  --c-bed: color-mix(in oklab, var(--fig-ok) 10%, var(--color-paper));
+}
+
+.topic [data-c="warn"] {
+  --c: var(--fig-warn);
+  --c-bed: color-mix(in oklab, var(--fig-warn) 12%, var(--color-paper));
+}
+
+.topic [data-c="info"] {
+  --c: var(--fig-info);
+  --c-bed: color-mix(in oklab, var(--fig-info) 10%, var(--color-paper));
+}
+
+.topic [data-c="bad"] {
+  --c: var(--color-accent);
+  --c-bed: color-mix(in oklab, var(--color-accent) 9%, var(--color-paper));
+}
+
+/* Explicitly back to ink. Needed because a step often *stops* being the
+   interesting one, and inheritance from a wrapping <g> would keep it coloured. */
+.topic [data-c="mute"] {
+  --c: var(--color-ink-3);
+  --c-bed: var(--color-paper);
+}
+
+.d-box {
+  fill: var(--c-bed, var(--color-paper));
+  stroke: var(--c, var(--color-ink-2));
+  stroke-width: 1;
+}
+
+.d-box-q {
+  fill: none;
+  stroke: var(--color-ink-3);
+  stroke-width: 1;
+  stroke-dasharray: 3 3;
+}
+
+/* The one element per drawing the plate exists to point at. Vermilion appears
+   nowhere else inside a figure, which is what keeps it under 3%. */
+.d-box-a {
+  fill: color-mix(in oklab, var(--color-accent) 8%, var(--color-paper));
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+}
+
+/* A region drawn around marks rather than instead of them. Kept separate from
+   .d-box-a because its fill has to stay light enough to read arrows through. */
+.d-zone {
+  fill: color-mix(in oklab, var(--color-accent) 6%, transparent);
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}
+
+.d-l {
+  stroke: var(--color-ink-2);
+  stroke-width: 1.2;
+  fill: none;
+}
+
+.d-l-a {
+  stroke: var(--color-accent);
+  stroke-width: 1.5;
+  fill: none;
+}
+
+.d-l-q {
+  stroke: var(--color-ink-3);
+  stroke-width: 1;
+  fill: none;
+  stroke-dasharray: 4 4;
+}
+
+.d-head {
+  fill: var(--color-ink-2);
+}
+
+.d-head-a {
+  fill: var(--color-accent);
+}
+
+.d-b {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--color-ink);
+}
+
+.d-b-a {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  fill: var(--color-accent);
+}
+
+.d-m {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--color-ink-2);
+}
+
+.d-m-a {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  fill: var(--color-accent);
+}
+
+.d-s {
+  font-family: var(--font-body);
+  font-size: 10.5px;
+  fill: var(--color-ink-3);
+}
+
+.d-a {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 500;
+  fill: var(--color-accent);
+}
+
+/* ---- the prose ----------------------------------------------------------- */
+
+.plate-body {
+  display: grid;
+  grid-template-columns: var(--space-lg) minmax(0, 1fr);
+  gap: var(--space-sm);
+}
+
+.plate-body > * {
+  grid-column: 2;
+  margin: 0;
+  max-width: var(--measure);
+}
+
+.plate-body p {
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+}
+
+.plate-limit {
+  border-left: var(--rule-solid) solid var(--color-rule-2);
+  padding-left: var(--space-xs);
+}
+
+.plate-limitlabel {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  margin-bottom: var(--space-3xs);
+}
+
+@media (max-width: 768px) {
+  .notes {
+    gap: var(--space-lg);
+  }
+
+  .plate-head,
+  .plate-body {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-2xs);
+  }
+
+  .plate-body > * {
+    grid-column: 1;
+  }
+
+  .plate-fig {
+    padding: var(--space-xs);
+  }
+}
+
+/* ---- contents rail ------------------------------------------------------- */
+
+.toc ol {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--rule-hair);
+  background: var(--color-rule);
+  border: var(--rule-hair) solid var(--color-rule);
+}
+
+.toc-item {
+  width: 100%;
+  height: 100%;
+  display: grid;
+  grid-template-columns: var(--space-md) minmax(0, 1fr);
+  gap: var(--space-xs);
+  align-items: start;
+  text-align: left;
+  background: var(--color-paper);
+  border: 0;
+  border-radius: var(--radius);
+  padding: var(--space-sm);
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+}
+
+.toc-item:hover {
+  background: var(--color-paper-2);
+}
+
+.toc-item:focus-visible {
+  outline: var(--rule-solid) solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.toc-item[aria-current="page"] {
+  background: var(--color-paper-2);
+}
+
+.toc-item[aria-current="page"] .toc-no,
+.toc-item[aria-current="page"] .toc-name {
+  color: var(--color-accent);
+}
+
+.toc-no {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.toc-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.toc-name {
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+}
+
+.toc-blurb {
+  font-size: var(--text-sm);
+  line-height: var(--leading-snug);
+  color: var(--color-ink-2);
+}
+
+.topic-loading {
+  min-height: 40vh;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+}
+
+/* ---- a topic page -------------------------------------------------------- */
+
+.topic {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.topic-plates {
+  gap: var(--space-xl);
+}
+
+.topic-head {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+  max-width: var(--measure);
+  padding-top: var(--space-md);
+  border-top: var(--rule-solid) solid var(--color-ink);
+}
+
+.topic-ref {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  margin: 0;
+}
+
+.topic-no {
+  color: var(--color-accent);
+}
+
+.topic-lede {
+  font-size: var(--text-2xl);
+  line-height: var(--leading-snug);
+  color: var(--color-ink);
+  margin: 0;
+  text-wrap: pretty;
+}
+
+.topic-source {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink-3);
+  margin: 0;
+}
+
+.nsec {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  padding-top: var(--space-md);
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.nsec-h {
+  display: grid;
+  grid-template-columns: var(--space-lg) minmax(0, 1fr);
+  gap: var(--space-sm);
+  align-items: baseline;
+  font-family: var(--font-display);
+  font-size: var(--text-3xl);
+  font-weight: 700;
+  letter-spacing: var(--tracking-display);
+  line-height: var(--leading-snug);
+  margin: 0;
+  text-wrap: balance;
+}
+
+.nsec-n {
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  font-weight: 400;
+  color: var(--color-ink-3);
+  font-variant-numeric: tabular-nums;
+}
+
+.nprose {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+}
+
+.ncode {
+  margin: 0;
+  padding: var(--space-sm);
+  background: var(--color-paper-3);
+  border: var(--rule-hair) solid var(--color-rule);
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.65;
+  color: var(--color-ink);
+}
+
+/* One span per line, so a long line scrolls the block rather than wrapping into
+   a second line that reads as real source. */
+.ncode-l {
+  display: block;
+  white-space: pre;
+}
+
+.ntbl-wrap {
+  overflow-x: auto;
+}
+
+.ntbl {
+  border-collapse: collapse;
+  width: 100%;
+  min-width: 420px;
+  font-size: var(--text-sm);
+}
+
+.ntbl th,
+.ntbl td {
+  text-align: left;
+  padding: var(--space-2xs) var(--space-xs);
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  vertical-align: top;
+  color: var(--color-ink-2);
+}
+
+.ntbl th {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-ink-3);
+  border-bottom: var(--rule-hair) solid var(--color-ink-3);
+}
+
+.ntbl tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.ntrap {
+  border-left: var(--rule-solid) solid var(--color-accent);
+  padding-left: var(--space-xs);
+  max-width: var(--measure);
+}
+
+.ntrap p {
+  margin: 0;
+  font-size: var(--text-base);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+}
+
+.ntrap-l {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-accent);
+  margin-bottom: var(--space-3xs);
+}
+
+/* ---- step-walk ----------------------------------------------------------- */
+
+.walk {
+  margin: 0;
+  background: var(--color-paper-3);
+  border: var(--rule-hair) solid var(--color-rule);
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.walk-stage {
+  overflow-x: auto;
+}
+
+.walk-stage:focus-visible {
+  outline: var(--rule-solid) solid var(--color-focus);
+  outline-offset: var(--space-3xs);
+}
+
+.walk-stage svg {
+  display: block;
+  width: 100%;
+  min-width: 560px;
+  height: auto;
+  color: var(--color-ink);
+}
+
+.walk-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-xs);
+  padding-top: var(--space-xs);
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.walk-btns {
+  display: flex;
+  gap: var(--rule-hair);
+}
+
+.walk-btns button {
+  min-width: 44px;
+  min-height: 44px;
+  background: var(--color-paper);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  color: var(--color-ink);
+}
+
+.walk-btns button:hover:not(:disabled) {
+  background: var(--color-paper-2);
+}
+
+.walk-btns button:disabled {
+  color: var(--color-ink-3);
+  cursor: default;
+}
+
+.walk-btns button:focus-visible {
+  outline: var(--rule-solid) solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.walk-play {
+  color: var(--color-accent-ink) !important;
+  background: var(--color-accent) !important;
+  border-color: var(--color-accent) !important;
+}
+
+.walk-play:hover {
+  background: var(--color-accent-hot) !important;
+}
+
+.walk-rail {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-3xs);
+  flex: 1;
+}
+
+.walk-step {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-3xs);
+  min-height: 32px;
+  padding: var(--space-3xs) var(--space-2xs);
+  background: transparent;
+  border: var(--rule-hair) solid transparent;
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-ink-3);
+}
+
+.walk-step:hover {
+  background: var(--color-paper-2);
+}
+
+.walk-step:focus-visible {
+  outline: var(--rule-solid) solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.walk-step[aria-current="step"] {
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+}
+
+.walk-step-n {
+  font-variant-numeric: tabular-nums;
+}
+
+.walk-note {
+  margin: 0;
+  max-width: var(--measure);
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  min-height: calc(var(--cell) * 6);
+}
+
+.walk figcaption {
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+  padding-top: var(--space-xs);
+  border-top: var(--rule-hair) solid var(--color-rule);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+/* ---- extra drawing marks ------------------------------------------------- */
+
+/* A cell that satisfies the predicate under discussion. Ink, not accent — the
+   accent is reserved for the one thing the step is about. */
+.d-box-fill {
+  fill: var(--color-paper-3);
+  stroke: var(--color-ink);
+  stroke-width: 1.5;
+}
+
+/* One object on the heap. A dot rather than a labelled box, because in the GC
+   drawing what matters is how many survive and where they move, never which. */
+.d-dot {
+  fill: var(--color-ink-2);
+}
+
+.d-dot-a {
+  fill: var(--color-accent);
+}
+
+/* Ruled out, and never coming back. */
+.d-box-out {
+  fill: none;
+  stroke: var(--color-ink-3);
+  stroke-width: 1;
+  opacity: 0.4;
+}
+
+/* ---- glyphs -------------------------------------------------------------- */
+
+/* Drawn in the lucide idiom — 24-unit box, 2-unit stroke, round caps, no fill —
+   because that is the vocabulary the rest of the web has agreed on and a reader
+   already knows what a padlock outline means. Drawn rather than installed: the
+   set below is twenty-odd glyphs, and a package would ship a thousand plus a
+   tree-shaking step to get back to twenty. No emoji anywhere: emoji render as
+   someone else's artwork at someone else's weight, and they would be the only
+   thing on the sheet not drawn in this ink. */
+.d-ic {
+  fill: none;
+  stroke: var(--c, var(--color-ink-2));
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* A glyph that reads as a filled chip — for the one mark per step that carries
+   a verdict (passed, blocked) rather than naming a component. */
+.d-ic-solid {
+  fill: var(--c, var(--color-ink-2));
+  stroke: none;
+}
+
+/* The bed a glyph sits on when it labels a box rather than floating free. */
+.d-ic-bed {
+  fill: var(--c-bed, var(--color-paper-2));
+  stroke: var(--c, var(--color-ink-3));
+  stroke-width: 1;
+}
+
+/* Neutral marks reading the legend. Each keeps its old ink as the fallback, so
+   a figure that sets no role renders exactly as it did before. */
+.d-l {
+  stroke: var(--c, var(--color-ink-2));
+}
+
+.d-b {
+  fill: var(--c, var(--color-ink));
+}
+
+.d-m {
+  fill: var(--c, var(--color-ink-2));
+}
+
+.d-s {
+  fill: var(--c, var(--color-ink-3));
+}
+
+.d-box-fill {
+  fill: var(--c-bed, var(--color-paper-3));
+  stroke: var(--c, var(--color-ink));
+}
+
+.d-dot {
+  fill: var(--c, var(--color-ink-2));
+}
+
+/* An arrowhead cannot inherit --c: a <marker> is rendered in its own context,
+   detached from the element that references it, so one marker per role is the
+   only thing that works. Defs carries all four. */
+.d-head-ok {
+  fill: var(--fig-ok);
+}
+
+.d-head-warn {
+  fill: var(--fig-warn);
+}
+
+.d-head-info {
+  fill: var(--fig-info);
+}
+
+/* Where a worked example came from. Sits under the code it cites, quiet enough
+   that it never competes with the code but present on every borrowed example —
+   an uncited example on a page that cites everything else reads as originally
+   mine, which is a claim I do not want to make by omission. */
+.nsrc {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.6;
+  color: var(--color-ink-3);
+  max-width: var(--measure);
+  margin: calc(-1 * var(--space-2xs)) 0 0;
+  padding-left: var(--space-2xs);
+  border-left: var(--rule-hair) solid var(--color-rule);
+}
+
+/* ---- the legend strip under a figure ------------------------------------- */
+
+/* Four colours are only a legend if the reader is told what they mean once. */
+.d-key {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2xs) var(--space-xs);
+  margin: 0;
+  padding: var(--space-2xs) 0 0;
+  list-style: none;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-ink-3);
+}
+
+.d-key li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3xs);
+}
+
+.d-key i {
+  width: var(--cell);
+  height: var(--cell);
+  flex: none;
+  background: var(--k);
+}
+
+.d-key li[data-c="ok"] {
+  --k: var(--fig-ok);
+}
+
+.d-key li[data-c="warn"] {
+  --k: var(--fig-warn);
+}
+
+.d-key li[data-c="info"] {
+  --k: var(--fig-info);
+}
+
+.d-key li[data-c="bad"] {
+  --k: var(--color-accent);
+}
+
+/* ---- lab ----------------------------------------------------------------- */
+
+/* Reads as a machine bolted to the sheet, not as another plate: same bed and
+   rule as `.walk`, but ruled off at the top so the eye registers it as a
+   different kind of object before it registers what is inside. */
+.lab {
+  margin: 0;
+  background: var(--color-paper-3);
+  border: var(--rule-hair) solid var(--color-rule);
+  border-top: var(--rule-solid) solid var(--color-accent);
+  padding: var(--space-sm);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.lab-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: var(--space-2xs) var(--space-xs);
+}
+
+.lab-tag {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  text-transform: uppercase;
+  color: var(--color-accent);
+}
+
+.lab-title {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: var(--text-xl);
+  font-weight: 500;
+  line-height: var(--leading-snug);
+  color: var(--color-ink);
+}
+
+.lab-hint {
+  margin: 0;
+  font-size: var(--text-sm);
+  color: var(--color-ink-3);
+  max-width: var(--measure);
+}
+
+/* Lanes beside the console, so cause and effect are in one glance. Collapses to
+   one column below 768 — stacked, the console still follows the lanes, which is
+   the order the reader needs. */
+.lab-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr);
+  gap: var(--space-xs);
+  align-items: start;
+}
+
+.lab-lanes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2xs);
+}
+
+.lab-lane {
+  border: var(--rule-hair) solid var(--color-rule);
+  border-left: var(--rule-solid) solid var(--c, var(--color-ink-3));
+  background: var(--color-paper);
+}
+
+.lab-lane[data-st="done"] {
+  opacity: 0.55;
+}
+
+.lab-lane-b {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2xs);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--space-3xs) var(--space-2xs);
+  background: transparent;
+  border: 0;
+  border-bottom: var(--rule-hair) solid var(--color-rule);
+  cursor: pointer;
+  text-align: left;
+  font-family: var(--font-mono);
+  font-size: var(--text-xs);
+  color: var(--color-ink);
+}
+
+.lab-lane-b:hover:not(:disabled) {
+  background: var(--c-bed, var(--color-paper-2));
+}
+
+.lab-lane-b:disabled {
+  cursor: default;
+}
+
+.lab-lane-b:focus-visible {
+  outline: var(--rule-solid) solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.lab-lane-n {
+  color: var(--c, var(--color-ink-3));
+  font-weight: 600;
+}
+
+.lab-lane-m {
+  color: var(--color-ink);
+}
+
+.lab-lane-lock {
+  display: inline-flex;
+  color: var(--c, var(--color-ink-2));
+}
+
+.lab-lane-s {
+  margin-left: auto;
+  font-size: var(--text-2xs);
+  color: var(--color-ink-3);
+  text-align: right;
+}
+
+/* The blocked state is the one the reader came for, so it is the one that gets
+   a colour of its own rather than the lane's. */
+.lab-lane[data-st="blocked"] .lab-lane-s {
+  color: var(--color-accent);
+}
+
+.lab-lane[data-st="open"] .lab-lane-s {
+  color: var(--fig-warn);
+}
+
+.lab-pc {
+  list-style: none;
+  margin: 0;
+  padding: var(--space-3xs) var(--space-2xs);
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: 1.9;
+  color: var(--color-ink-3);
+}
+
+.lab-pc li[data-past] {
+  text-decoration: line-through;
+  opacity: 0.5;
+}
+
+/* The program counter. A left mark rather than a highlight, because the line it
+   points at has not run yet — highlighting would read as "this one did". */
+.lab-pc li[aria-current="step"] {
+  color: var(--color-ink);
+  box-shadow: -6px 0 0 -2px var(--c, var(--color-ink));
+}
+
+.lab-con {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3xs);
+}
+
+.lab-con-l {
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  letter-spacing: var(--tracking-label);
+  color: var(--color-ink-3);
+}
+
+.lab-out {
+  margin: 0;
+  padding: var(--space-2xs);
+  min-height: calc(var(--cell) * 18);
+  background: var(--color-ink);
+  border: var(--rule-hair) solid var(--color-rule);
+  font-family: var(--font-mono);
+  font-size: var(--text-sm);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-x: auto;
+}
+
+/* Console colours are lifted off the ink bed, not the paper one: the four
+   figure roles are mixed for a light background and go muddy on black. */
+.lab-out-c {
+  color: color-mix(in oklab, var(--c, var(--color-paper)) 62%, white);
+}
+
+.lab-out-idle {
+  color: var(--color-ink-3);
+  font-size: var(--text-2xs);
+}
+
+.lab-verdict {
+  margin: 0;
+  padding-left: var(--space-2xs);
+  border-left: var(--rule-solid) solid var(--c, var(--color-ink-3));
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--color-ink);
+  max-width: var(--measure);
+  min-height: calc(var(--cell) * 4);
+}
+
+.lab-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2xs);
+  padding-top: var(--space-xs);
+  border-top: var(--rule-hair) solid var(--color-rule);
+}
+
+.lab-btn {
+  min-height: 36px;
+  padding: 0 var(--space-2xs);
+  background: var(--color-paper);
+  border: var(--rule-hair) solid var(--color-rule-2);
+  border-radius: var(--radius);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-ink);
+}
+
+.lab-btn:hover:not(:disabled) {
+  background: var(--color-paper-2);
+}
+
+.lab-btn:disabled {
+  color: var(--color-ink-3);
+  cursor: default;
+}
+
+.lab-btn:focus-visible {
+  outline: var(--rule-solid) solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.lab-btn-a:not(:disabled) {
+  color: var(--color-accent-ink);
+  background: var(--color-accent);
+  border-color: var(--color-accent);
+}
+
+.lab-btn-a:hover:not(:disabled) {
+  background: var(--color-accent-hot);
+}
+
+.lab-sw {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-3xs);
+  min-height: 36px;
+  padding-right: var(--space-2xs);
+  cursor: pointer;
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  color: var(--color-ink);
+}
+
+.lab-sw input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-accent);
+}
+
+.lab-tally {
+  margin: 0;
+  padding-left: var(--space-2xs);
+  border-left: var(--rule-solid) solid var(--c, var(--color-ink-3));
+  font-family: var(--font-mono);
+  font-size: var(--text-2xs);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+}
+
+.lab-tally strong {
+  color: var(--c, var(--color-ink));
+  font-size: var(--text-sm);
+}
+
+.lab figcaption {
+  font-size: var(--text-sm);
+  line-height: var(--leading-body);
+  color: var(--color-ink-2);
+  padding-top: var(--space-xs);
+  border-top: var(--rule-hair) solid var(--color-rule);
+  max-width: var(--measure);
+  margin: 0;
+}
+
+.d-glyph {
+  display: block;
+  flex: none;
+}
+
+@media (max-width: 768px) {
+  .topic,
+  .topic-plates {
+    gap: var(--space-md);
+  }
+
+  .nsec-h {
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-3xs);
+  }
+
+  .walk-rail {
+    order: 3;
+    width: 100%;
+  }
+
+  .lab-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 /* ---------------------------------------------------------- reduced motion */
 
 @media (prefers-reduced-motion: reduce) {

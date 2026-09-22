@@ -36,15 +36,117 @@ as tabs.
   the sheet, addressed by coordinate rather than stacked in a column.
 - **Project (`project`)** — 14 · Narrative Workflow. The three rooms become numbered
   stages `1.0 → 2.0 → 3.0`. Sequential content gets a sequential shape.
-- **Drawings (`art`)** — 08 · Photographic. One drawing per fold, full bleed against
-  the sheet. Type is annotation, never headline. No titles, no dates — see the
-  content rule below.
+- **Notes (`notes`)** — 11 · Annotated Plate. A notebook of numbered pages `00 → 13`,
+  opened from a contents rail. Page 00 is the six backend mechanisms as plates
+  `P.01 → P.06`; pages 01–13 are theory, each a hand-authored SVG figure carrying the
+  shape with prose beside it carrying the reason. Type is annotation on a drawing,
+  which is the register the retired `art` side introduced and the only part of it
+  worth keeping.
+
+  Two things differ between page 00 and the theory pages, both on purpose. Page 00 is
+  bilingual because it describes work a recruiter may read in either language; the
+  theory pages are Vietnamese-only because they are study material for one reader.
+  And page 00 draws its examples from the running system, because its claim is *this
+  is what I built* — the theory pages use a cup, a wardrobe, a parking ticket, because
+  their claim is *this is how the thing behaves*, and a reader holding a language rule
+  and somebody else's domain model at once spends half their attention on the half
+  that does not matter.
+- **Drawings (`art`)** — 08 · Photographic. Retired with the drawings side. Kept here
+  because the `notes` plates inherit its annotation register.
 
 ## Nav and footer
 
 - **Nav — N3 side-rail.** A vertical rail pinned to the left gutter carrying the
   three sides plus the language toggle. Sides are addressed like sheet references
-  (`01 / 02 / 03`). Collapses to a top bar under 768 px.
+  (`01 profile / 02 project / 03 notes`). Collapses to a top bar under 768 px.
+
+## Figures
+
+Hand-authored inline SVG, no chart library. Every drawn coordinate is a multiple of
+the 8 px cell, so a figure lands on the same grid as the page instead of floating
+over it. One shared `<defs>` block per page carries the arrowheads.
+
+Vermilion marks **one element per figure** — the thing the plate exists to point at —
+and appears nowhere else inside a drawing. That is what keeps the accent under 3 %
+on a side that is mostly drawings.
+
+### Amendment — the figure legend (notes side only)
+
+The rule above holds everywhere colour is **emphasis**: the profile, the project, and
+any figure whose job is to say *look here*.
+
+It does not hold on a **teaching** figure, where colour is **encoding**. A reader
+working out a mechanism has to tell a step that succeeded from one that cost something
+from one that broke. In one ink they must read every label to find out which box is the
+bad one — which is the work the drawing was supposed to save them. So figures under
+`.topic` carry a four-role legend:
+
+```
+ok    --fig-ok    oklch(50% 0.132 152)   this step succeeded, this path is cheap
+warn  --fig-warn  oklch(56% 0.125 72)    this costs something, or is the second actor
+info  --fig-info  oklch(50% 0.125 248)   data in motion, a copy, the first actor
+bad   --color-accent                     it broke — the inherited vermilion, not a new hue
+```
+
+Four is a ceiling, not a starting point. A fifth hue stops being a legend a reader can
+hold in their head and goes back to being decoration. All four sit at L≈52 % so none
+outranks the others by weight alone.
+
+Three mechanics make it one system rather than twenty-five classes:
+
+- `data-c="ok"` on any mark — or on a `<g>` around several — sets `--c` and `--c-bed`.
+  Every neutral mark reads `var(--c, «its own ink»)`, so a figure that declares no role
+  renders **exactly** as it did before the legend existed.
+- A `<marker>` paints in its own context and never sees `--c`, so arrowheads need one
+  marker per role. `Defs` carries all four. A green line ending in a grey point reads as
+  an unfinished drawing.
+- A figure using the legend states it once, under the caption, via `<Key>`. Colour is
+  only a legend if the legend is written down.
+
+### Glyphs
+
+Drawn in the lucide idiom — 24-unit box, 2-unit stroke, round caps, no fill — and placed
+by the top-left of an `s`×`s` box like every other mark. Borrowed vocabulary, not a
+borrowed package: a padlock outline is already understood, and a private symbol set
+would need its own legend before any figure could be read. Twenty-eight glyphs live in
+`parts.tsx`; a dependency plus the tree-shaking step to get back to twenty-eight buys
+nothing.
+
+**No emoji, ever.** An emoji renders as someone else's artwork at someone else's weight
+and would be the only thing on the sheet not drawn in this ink.
+
+### Amendment — coloured code (notes side only)
+
+This reverses the earlier rule that a code block stays black. That rule reasoned that a
+second colour would compete with the vermilion; it holds on the profile side, where
+colour is emphasis, and it does not hold here for the same reason the figure legend
+above does not: inside teaching material colour is an **encoding**. A reader scanning
+`@Transactional public void saveOne(Car c)` for the thing that matters should not have
+to read the line to find it.
+
+The code palette is therefore **the same four roles as the figures**, not a new one —
+blue for keywords, green for literal data, amber for numbers, ink for type names, grey
+for comments and syntax. `tokens.css` names them `--code-*` as aliases so the two can
+never drift.
+
+Vermilion lands on **annotations and nothing else**. That keeps it under the 3 % rule and
+spends it on the one mark these pages are about: on page 08, `@Transactional` *is* the
+lesson.
+
+Mechanically: `prism-react-renderer`, themed with `var()` rather than literals so the
+colours stay reachable from `tokens.css`. Java, Dockerfile and shell grammars are written
+in `notes/code.tsx` — the bundled Prism has neither, and three short grammars extending
+`clike` cost less than a second dependency imported for its side effects. The chunk lands
+in `parts`, which the profile side never loads.
+
+Two rules learned by getting them wrong:
+
+- A region drawn *around* marks (`.d-zone`) is painted **before** them. Painted after,
+  its fill covers them, because a `fill="none"` presentation attribute loses to any
+  CSS rule and the class wins.
+- Sentences belong in the `figcaption`, not in the drawing. A label wider than its
+  own `viewBox` is silently clipped; `tools/plates.mjs` checks every `<text>` against
+  its `viewBox` in both languages and fails the ones that escape.
 - **Footer — Ft5 Statement.** One closing line, hairline rule above, colophon small.
 
 ## Theme — custom · "Ô li"
@@ -67,6 +169,17 @@ under 3 % of any viewport.
 --color-accent     oklch(52% 0.190 32)      朱 vermilion, carried over
 --color-accent-ink oklch(98% 0.004 95)
 --color-focus      oklch(45% 0.160 250)     deliberately not the accent
+
+--fig-ok           oklch(50% 0.132 152)     figure legend — notes side only
+--fig-warn         oklch(56% 0.125 72)      see Figures › Amendment
+--fig-info         oklch(50% 0.125 248)     bad = --color-accent, not re-declared
+
+--code-kw          → --fig-info             code colours are aliases of the four
+--code-str         → --fig-ok               figure roles, never new hues
+--code-num         → --fig-warn
+--code-anno        → --color-accent         annotations only — the subject of 08/09
+--code-type        → --color-ink
+--code-comment     → --color-ink-3
 ```
 
 ## Typography
@@ -92,12 +205,59 @@ GSAP, already a project dependency. Exactly three primitives:
 2. **`stage-advance`** — the project's stage number counts up as its section takes
    the viewport.
 3. **`plate-reveal`** — a drawing wipes in cell-by-cell from its top-left corner.
+4. **`step-walk`** — a figure holds a sequence of frames and the reader drives it.
+
+`step-walk` is the only one that is a control rather than a reveal. A reveal answers
+"has the reader arrived"; this answers "which step are we on", which goes backwards,
+is readable while paused, and belongs to the reader. That is why it is a primitive
+and not a variation of `cell-wake`.
+
+**No second animation library.** GSAP timelines are the right shape for a stepped
+figure, and a second library would have added a dependency and its bundle to buy
+nothing. If a future page needs physics or a spring, revisit this — not before.
+
+Marks inside a stepped figure that should animate in carry `data-enter`. They rest
+**visible**; the tween plays them in. A frame whose tween never runs is still a
+correct picture of that step.
 
 Easings: `--ease-out cubic-bezier(0.16, 1, 0.3, 1)`, `--ease-in-out
 cubic-bezier(0.65, 0, 0.35, 1)`. No overshoot on UI state.
 
 **Reduced motion** — all three collapse to a ≤150 ms opacity crossfade. The grid
 renders at its resting opacity and never animates.
+
+### Amendment — `lab`, the fifth primitive (notes side only)
+
+A **lab** is a small machine with real state that the reader supplies input to. The
+picture is *computed* from that state, not drawn ahead of it, so the reader can
+reach a screen the author never saw.
+
+**When a lab, when a walkthrough.** A walkthrough is right when the mechanism has
+one true order — a request through the `DispatcherServlet` goes through those
+stages in that order, and letting a reader shuffle them would teach a lie. A lab is
+right when the lesson *is* that the order is not fixed. A drawing of one thread
+interleaving says "this can happen"; the reader nods and learns nothing, because
+the thing worth knowing is that a hundred other interleavings can happen and you do
+not get to choose. No number of frames carries that.
+
+Three rules, so a lab stays a lab and does not become a playground:
+
+1. **Every control maps to something asked in an interview.** A slider that only
+   makes the drawing prettier is decoration wearing an interaction.
+2. **A lab keeps a button that reproduces the exact output printed in the book it
+   cites.** The simulation has to be checkable against something that is not
+   itself. If `lịch của sách` ever stops matching page 240, the machine is wrong.
+3. **The tally is measured, never asserted.** "2 000 random schedules → 1 943
+   broken" is a number this page computed on this device, not a claim copied from
+   somewhere. It is the honest-copy rule applied to a simulation.
+
+Marks: `.lab` shares `.walk`'s bed and rule but is ruled off at the top in accent,
+so the eye registers "different kind of object" before it reads the contents. The
+console is the one surface on the whole site that sits on ink rather than paper —
+it is a terminal, and the four figure roles are re-mixed for the dark bed
+(`color-mix(… 62%, white)`) because colours tuned for paper go muddy on black.
+
+Still no second library. A lab is `useState` and a reducer-shaped step function.
 
 ## Microinteractions stance
 
@@ -136,6 +296,13 @@ argued, the new copy states and lets the measured figures argue.
 
 Both languages carry the same voice. Vietnamese is the primary; English is a
 translation of it, not a separate register.
+
+**One documented exception.** On the notes side, page `00` (the six plates about
+IntelliPath) is bilingual because it faces a hiring reader. The theory pages —
+`01` onward — are Vietnamese-only with English technical terms left in place, which
+is how the material is actually studied. Translating them would have halved the
+depth per unit of effort for a reader who does not exist. The rail and every
+chrome string stay bilingual, so nothing is stranded.
 
 ## What pages MUST share
 

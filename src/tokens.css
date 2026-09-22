@@ -55,6 +55,48 @@
      branding. */
   --color-focus: oklch(45% 0.16 250);
 
+  /* ---- Figure legend · notes side only ----------------------------------
+     The "vermilion under 3%, one accent per view" rule governs the profile and
+     the project, where colour is emphasis — it says *look here*.
+
+     Inside a teaching figure colour is not emphasis, it is a legend. Green
+     means this step succeeded, amber means it cost something, vermilion means
+     it broke, blue means data on the wire. A reader working out a mechanism
+     has to tell those apart at a glance; in greyscale they must read every
+     label first to find out which box is the bad one, which is exactly the
+     work the drawing was supposed to save them.
+
+     So: four roles, fixed, scoped to figures on the notes side. Four is the
+     ceiling on purpose — a fifth hue would stop being a legend a reader can
+     hold in their head and go back to being decoration.
+
+     All four sit at L≈52% so none outranks the others by weight alone, and
+     each was checked against the paper for text contrast. */
+  --fig-ok: oklch(50% 0.132 152);
+  --fig-warn: oklch(56% 0.125 72);
+  --fig-info: oklch(50% 0.125 248);
+  /* --fig-bad is --color-accent. Deliberately not re-declared: a second name
+     for the same colour is how two things that must match drift apart. */
+
+  /* ---- Code ---------------------------------------------------------------
+     The same four roles as the figure legend above, not a second palette. A
+     reader who has learned that green is a value and blue is the machine's own
+     vocabulary in a drawing should not have to relearn it three lines down in
+     the listing that drawing describes.
+
+     Vermilion is spent on annotations and nothing else. On pages 08 and 09 the
+     annotation IS the subject — `@Transactional` is the whole lesson — so this
+     is the rare place where the accent marks the thing to look at rather than
+     decorating the block. */
+  --code-comment: var(--color-ink-3);
+  --code-kw: var(--fig-info);
+  --code-str: var(--fig-ok);
+  --code-num: var(--fig-warn);
+  --code-anno: var(--color-accent);
+  --code-type: var(--color-ink);
+  --code-fn: var(--color-ink-2);
+  --code-punct: var(--color-ink-3);
+
   --color-rule: color-mix(in oklab, var(--color-ink) 14%, transparent);
   --color-rule-2: color-mix(in oklab, var(--color-ink) 32%, transparent);
 
