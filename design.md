@@ -36,6 +36,15 @@ as tabs.
   the sheet, addressed by coordinate rather than stacked in a column.
 - **Project (`project`)** — 14 · Narrative Workflow. The three rooms become numbered
   stages `1.0 → 2.0 → 3.0`. Sequential content gets a sequential shape.
+
+  *Amendment — more than one project.* The side is now an index (`#/project`) of
+  numbered projects `02.1, 02.2 …`, each opening into the same three stages
+  (`#/project/<id>`). The index is only the way in and keeps the stage rhythm — the
+  sheet reference sits where a stage number sits. Every project uses the same three
+  stages so a reader who has read one knows how to read the next; a project whose
+  story does not fit problem → build → measured is a sign the story is not ready,
+  not that the shape should bend. Figures on a project page reuse the notes plate
+  marks with colour as **emphasis**: one vermilion mark per figure, no legend.
 - **Notes (`notes`)** — 11 · Annotated Plate. A notebook of numbered pages `00 → 13`,
   opened from a contents rail. Page 00 is the six backend mechanisms as plates
   `P.01 → P.06`; pages 01–13 are theory, each a hand-authored SVG figure carrying the
@@ -277,8 +286,11 @@ Still no second library. A lab is `useState` and a reducer-shaped step function.
 ## Copy rule — inherited, non-negotiable
 
 `src/content.ts` carries an HONEST-COPY rule from the previous system and it stands:
-**every figure is measured from the IntelliPath repository or its database.** Voice
-may be rewritten; numbers may not. Images stay Vinh's own files in `/public/art`.
+**every figure is measured from the repository of the project it describes** — the
+IntelliPath repository or its database, the `results/` of jev-1000-com-tam — and each
+project's `copy.ts` says where at the top. A figure someone else published (a vendor's
+latency claim) may appear only labelled as theirs. Voice may be rewritten; numbers
+may not. Images stay Vinh's own files in `/public/art`.
 
 The drawings carry no titles, no medium lines, no dates, on purpose. Captioning a
 hobby turns it into a portfolio piece being sold.

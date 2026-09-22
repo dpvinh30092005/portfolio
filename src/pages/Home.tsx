@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { COPY, LINKS, SIDE_REF, STACK, type Lang } from "../content";
-import type { Side } from "../router";
 import { useCellWake } from "../Grid";
+import { PROJECTS } from "../projects/registry";
 
 /**
  * 19 · Map / Diagram.
@@ -29,7 +29,7 @@ function Node({ className, lang, children }: { className: string; lang: Lang; ch
   );
 }
 
-export default function Home({ lang, go }: { lang: Lang; go: (s: Side) => void }) {
+export default function Home({ lang }: { lang: Lang }) {
   const t = COPY[lang].home;
   const head = useRef<HTMLDivElement>(null);
 
@@ -86,24 +86,24 @@ export default function Home({ lang, go }: { lang: Lang; go: (s: Side) => void }
 
         <Node className="node--sides" lang={lang}>
           <p className="node-ref">D — {t.sidesLabel}</p>
+          {/* One card per project, read from the registry, so a new project
+              shows up here the moment it is listed there. */}
           <div className="side-cards">
-            <button type="button" className="side-card" onClick={() => go("project")}>
-              <span className="side-card-t">
-                <span className="side-card-ref">{SIDE_REF.project}</span>
-                {t.sides.project.t}
-              </span>
-              <span className="side-card-d">{t.sides.project.d}</span>
-            </button>
+            {PROJECTS.map((p) => (
+              <a className="side-card" key={p.id} href={`#/project/${p.id}`}>
+                <span className="side-card-t">
+                  <span className="side-card-ref">{p.no}</span>
+                  {p.name[lang]}
+                </span>
+                <span className="side-card-d">{p.blurb[lang]}</span>
+              </a>
+            ))}
             <a className="side-card" href={LINKS.demo} target="_blank" rel="noreferrer">
               <span className="side-card-t">
                 <span className="side-card-ref">↗</span>
                 intelipath.online
               </span>
-              <span className="side-card-d">
-                {lang === "vi"
-                  ? "Bản đang chạy thật. Mở thử được ngay."
-                  : "The running system. Open it and try it."}
-              </span>
+              <span className="side-card-d">{t.demo}</span>
             </a>
           </div>
         </Node>

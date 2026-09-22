@@ -1,166 +1,120 @@
-import { useEffect, useRef } from "react";
-import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { COPY, LINKS, STACK, STAGES, type Lang } from "../content";
+import { Suspense, useRef } from "react";
+import { COPY, SIDE_REF, type Lang } from "../content";
 import { useCellWake } from "../Grid";
-
-gsap.registerPlugin(ScrollTrigger);
+import { LangProvider } from "../notes/i18n";
+import { PROJECTS, findProject, nextProject, type ProjectEntry } from "../projects/registry";
 
 /**
- * 14 · Narrative Workflow.
+ * The project side: an index of projects at `#/project`, one project at
+ * `#/project/<id>`.
  *
- * The three rooms become numbered stages, 1.0 → 2.0 → 3.0. The content was
- * already sequential — a problem, a build, a set of measurements — and the
- * previous system's continuous-prose shape hid that ordering behind paragraphs.
- *
- * The number is sticky beside its own stage rather than fixed to the page, so
- * the reader always knows which stage they're inside without a progress bar.
+ * Every project page keeps the 14 · Narrative Workflow shape (see
+ * `projects/Stage.tsx`); the index is only the way in. Projects come from
+ * `projects/registry.ts`, so adding one never touches this file.
  */
 
-/** stage-advance — the stage number counts up as its section takes the viewport. */
-function useStageAdvance(ref: React.RefObject<HTMLElement | null>, to: number, deps: unknown[]) {
-  useEffect(() => {
-    const el = ref.current;
-    if (!el) return;
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      el.textContent = to.toFixed(1);
-      return;
-    }
-    // Resting state is the CORRECT number, and the tween counts up TO it.
-    // The other way round — start low, wait for the trigger — leaves a stage
-    // labelled "0.0" whenever the trigger never fires, which is exactly what
-    // happens to a section already past its start point on first paint. A
-    // decoration must never be what makes a figure right.
-    el.textContent = to.toFixed(1);
-    const n = { v: to };
-    const st = ScrollTrigger.create({
-      trigger: el,
-      start: "top 90%",
-      once: true,
-      onEnter: () => {
-        n.v = Math.max(0, to - 1);
-        gsap.to(n, {
-          v: to,
-          duration: 0.7,
-          ease: "power2.out",
-          onUpdate: () => {
-            el.textContent = n.v.toFixed(1);
-          },
-          onComplete: () => {
-            el.textContent = to.toFixed(1);
-          },
-        });
-      },
-    });
-    return () => st.kill();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, deps);
-}
+type Go = (side: "project", id?: string) => void;
 
-function Stage({
-  no,
-  name,
-  children,
-  lang,
-}: {
-  no: string;
-  name: string;
-  children: React.ReactNode;
-  lang: Lang;
-}) {
-  const root = useRef<HTMLElement>(null);
-  const num = useRef<HTMLSpanElement>(null);
-  useCellWake(root, [lang]);
-  useStageAdvance(num, parseFloat(no), [lang]);
+export default function Project({ lang, id, go }: { lang: Lang; id: string | null; go: Go }) {
+  const current = findProject(id);
 
   return (
-    <section className="stage" ref={root}>
-      <div className="stage-mark">
-        <span className="stage-no" ref={num}>
-          {no}
-        </span>
-        <span className="stage-name">{name}</span>
+    /* The provider serves the shared marks borrowed from the notes side —
+       `Limit` carries its own bilingual label and reads the language from here. */
+    <LangProvider value={lang}>
+      <div className="side" id="main">
+        {current ? <One entry={current} lang={lang} go={go} /> : <Index lang={lang} />}
       </div>
-      <div>{children}</div>
-    </section>
+    </LangProvider>
   );
 }
 
-export default function Project({ lang }: { lang: Lang }) {
-  const t = COPY[lang].project;
-  const names = COPY[lang].stageName;
+function Index({ lang }: { lang: Lang }) {
+  const t = COPY[lang].projects;
   const head = useRef<HTMLDivElement>(null);
   useCellWake(head, [lang]);
 
   return (
-    <div className="side" id="main">
+    <>
       <div className="flow-head" ref={head}>
-        <p className="label">IntelliPath</p>
-        <h1 className="stage-h">{t.problem.h}</h1>
-        <p className="flow-lede">{t.lede}</p>
+        <p className="label">
+          {SIDE_REF.project} — {COPY[lang].sideName.project}
+        </p>
+        <h1 className="stage-h">{t.h}</h1>
+        <p className="flow-lede">{t.intro}</p>
       </div>
 
-      <Stage no={STAGES[0].no} name={names.problem} lang={lang}>
-        <div className="stage-body">
-          {t.problem.body.map((p) => (
-            <p key={p.slice(0, 24)}>{p}</p>
-          ))}
-          <p className="pull">{t.problem.pull}</p>
-        </div>
-      </Stage>
+      <ul className="proj-list">
+        {PROJECTS.map((p) => (
+          <ProjectRow key={p.id} p={p} lang={lang} />
+        ))}
+      </ul>
+    </>
+  );
+}
 
-      <Stage no={STAGES[1].no} name={names.build} lang={lang}>
-        <h2 className="stage-h">{t.build.h}</h2>
-        <div className="stage-body">
-          <p>{t.build.body}</p>
-        </div>
+/** A link rather than a button: a project is a place, and a reader should be able to open it in a new tab. */
+function ProjectRow({ p, lang }: { p: ProjectEntry; lang: Lang }) {
+  const el = useRef<HTMLLIElement>(null);
+  useCellWake(el, [lang]);
+  return (
+    <li ref={el}>
+      <a className="proj-card" href={`#/project/${p.id}`}>
+        <span className="proj-no">{p.no}</span>
+        <span className="proj-body">
+          <span className="proj-name">{p.name[lang]}</span>
+          <span className="proj-role">{p.role[lang]}</span>
+          <span className="proj-blurb">{p.blurb[lang]}</span>
+          <span className="proj-tags">
+            {p.tags.map((tag) => (
+              <span className="chip" key={tag}>
+                {tag}
+              </span>
+            ))}
+          </span>
+        </span>
+        <span className="proj-open" aria-hidden="true">
+          {COPY[lang].projects.open} →
+        </span>
+      </a>
+    </li>
+  );
+}
 
-        <p className="label" style={{ marginTop: "var(--space-md)" }}>
-          {t.build.stackLabel}
-        </p>
-        <ul className="chips">
-          {STACK.map((s) => (
-            <li className="chip" key={s}>
-              {s}
-            </li>
-          ))}
-        </ul>
+function One({ entry, lang, go }: { entry: ProjectEntry; lang: Lang; go: Go }) {
+  const t = COPY[lang].projects;
+  const next = nextProject(entry.id);
+  const { Page } = entry;
 
-        <p className="label" style={{ marginTop: "var(--space-md)" }}>
-          {t.build.partsLabel}
-        </p>
-        <ul className="parts">
-          {t.build.parts.map((p) => (
-            <li className="part" key={p.n}>
-              <p className="part-n">{p.n}</p>
-              <p className="part-d">{p.d}</p>
-            </li>
-          ))}
-        </ul>
+  return (
+    <>
+      <nav className="proj-crumb" aria-label={t.all}>
+        <button type="button" className="btn btn--ghost" onClick={() => go("project")}>
+          ← {t.all}
+        </button>
+        <span className="proj-crumb-no">{entry.no}</span>
+      </nav>
 
-        <p style={{ marginTop: "var(--space-md)" }}>
-          <a className="btn btn--ghost" href={LINKS.project} target="_blank" rel="noreferrer">
-            {t.build.cta}
-          </a>
-        </p>
-      </Stage>
+      {/* Reserves height while the page chunk loads, or the footer jumps up and
+          back down on every project switch. */}
+      <Suspense fallback={<div className="topic-loading" aria-live="polite">{t.loading}</div>}>
+        <Page lang={lang} />
+      </Suspense>
 
-      <Stage no={STAGES[2].no} name={names.proof} lang={lang}>
-        <h2 className="stage-h">{t.proof.h}</h2>
-        <div className="stage-body">
-          <p>{t.proof.lede}</p>
-        </div>
-        <ul className="stats">
-          {t.proof.stats.map((s) => (
-            <li className="stat" key={s.label}>
-              <p className="stat-n">{s.n}</p>
-              <p className="stat-label">{s.label}</p>
-              <p className="stat-how">{s.how}</p>
-            </li>
-          ))}
-        </ul>
-        <p className="note">{t.proof.note}</p>
-      </Stage>
-    </div>
+      {next && (
+        <aside className="proj-next" aria-label={t.next}>
+          <p className="label">{t.next}</p>
+          <div className="side-cards">
+            <a className="side-card" href={`#/project/${next.id}`}>
+              <span className="side-card-t">
+                <span className="side-card-ref">{next.no}</span>
+                {next.name[lang]}
+              </span>
+              <span className="side-card-d">{next.blurb[lang]}</span>
+            </a>
+          </div>
+        </aside>
+      )}
+    </>
   );
 }

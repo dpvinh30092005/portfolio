@@ -6,6 +6,10 @@
  * its database; change it here, never in a component. Images are Vinh's own files
  * in /public/art — no generated stand-in art is ever shipped in their place.
  *
+ * Project copy is not here. Each project keeps its own words and figures in
+ * `projects/<id>/copy.ts` under the same rule, measured from that project's own
+ * repository; this file holds only the chrome around them.
+ *
  * The drawings side was removed: the hobby was competing for attention with the
  * one thing a hiring reader is here to assess. The image files stay in
  * /public/art in case it comes back.
@@ -53,7 +57,7 @@ export const PLATES = [
 ] as const;
 export type PlateId = (typeof PLATES)[number]["id"];
 
-/** The project's three stages, in travel order. */
+/** A project's three stages, in travel order. Every project page uses the same three. */
 export const STAGES = [
   { id: "problem", no: "1.0" },
   { id: "build", no: "2.0" },
@@ -101,15 +105,17 @@ type Copy = {
     stackLabel: string;
     reachLabel: string;
     sidesLabel: string;
-    sides: { project: { t: string; d: string } };
+    demo: string;
     cta: string;
   };
-  project: {
-    lede: string;
-    problem: { h: string; body: string[]; pull: string };
-    build: { h: string; body: string; stackLabel: string; partsLabel: string; parts: { n: string; d: string }[]; cta: string };
-    proof: { h: string; lede: string; note: string; stats: { n: string; label: string; how: string }[] };
-    scroll: string;
+  /** Chrome for the project side. The projects themselves live in `projects/`. */
+  projects: {
+    h: string;
+    intro: string;
+    open: string;
+    all: string;
+    next: string;
+    loading: string;
   };
   notes: {
     lede: string;
@@ -141,47 +147,16 @@ const vi: Copy = {
     stackLabel: "Đang dùng",
     reachLabel: "Liên hệ",
     sidesLabel: "Xem tiếp",
-    sides: {
-      project: { t: "Dự án", d: "IntelliPath — lộ trình học dựng từ repo có commit thật và tin tuyển dụng đang mở." },
-    },
+    demo: "Bản đang chạy thật. Mở thử được ngay.",
     cta: "Gửi email",
   },
-  project: {
-    lede: "IntelliPath · 2026 · backend và trưởng nhóm",
-    problem: {
-      h: "Sinh viên năm nhất và năm cuối mở cùng một roadmap Java, và thấy giống hệt nhau",
-      body: [
-        "Cả hai đều nhận đúng 71 mục như nhau. Không mục nào biết người đọc đã làm được gì, và không mục nào biết thị trường đang tuyển cái gì.",
-        "IntelliPath dựng lộ trình từ dữ liệu của từng người: repo GitHub mà họ thật sự có commit, kỹ năng tự khai, và một bài kiểm tra sinh ra từ chính những kỹ năng đó. Kết quả được đối chiếu với tin tuyển dụng đang mở.",
-      ],
-      pull: "Hệ thống kiểm tra commit trên GitHub trước khi tính một repo là bằng chứng.",
-    },
-    build: {
-      h: "Ba dịch vụ, một cơ sở dữ liệu, không có bước thủ công nào ở giữa",
-      body:
-        "Backend giữ toàn bộ quyết định. Dịch vụ Python chỉ đọc và trích xuất, không kết luận. Frontend vẽ lại đúng cái backend đã tính, nên khi một kết quả sai thì chỉ có một chỗ để mở ra xem.",
-      stackLabel: "Công nghệ",
-      partsLabel: "Các mảnh chính",
-      parts: [
-        { n: "Xác thực quyền tác giả", d: "Đối chiếu commit của sinh viên với danh sách contributor của repo. Kết quả có ba giá trị chứ không phải hai, để một lần GitHub lỗi không bị đọc thành khai gian." },
-        { n: "Trích xuất kỹ năng bằng LLM", d: "Đọc mô tả tin tuyển dụng, rút ra tên kỹ năng, rồi khớp mỗi tên về đúng một mục trong catalog." },
-        { n: "Danh tính kỹ năng", d: "Một hàm chuẩn hoá dùng chung cho cả ba luồng ghi, nên `Fast API` và `FastAPI` không thành hai kỹ năng khác nhau." },
-        { n: "Lộ trình theo bậc", d: "Nút nào mở và nút nào khoá được tính từ bậc năng lực đo được, không phải từ vị trí trong cây." },
-      ],
-      cta: "Xem mã nguồn",
-    },
-    proof: {
-      h: "Số đo được",
-      lede: "Hệ thống này dựng lên để nói rằng bằng chứng đáng tin hơn lời khai, nên trang của nó cũng chỉ ghi những gì đếm được.",
-      note: "Mỗi con số đọc trực tiếp từ repo và cơ sở dữ liệu, không làm tròn.",
-      stats: [
-        { n: "325", label: "test backend xanh", how: "./mvnw test — 0 failure, 0 error" },
-        { n: "913", label: "tin tuyển dụng đã đọc bằng LLM", how: "913/913, không bỏ tin nào" },
-        { n: "4.177", label: "nút kỹ năng trong catalog", how: "bảng skill_nodes" },
-        { n: "5.660", label: "liên kết kỹ năng ↔ tin", how: "bảng recruitment_skills" },
-      ],
-    },
-    scroll: "Cuộn để đi tiếp",
+  projects: {
+    h: "Những thứ tôi đã dựng, kèm số đo được",
+    intro: "Mỗi dự án kể theo ba bước: vấn đề, cách dựng, và những gì đo được. Con số nào cũng ghi rõ lấy từ đâu.",
+    open: "Mở dự án",
+    all: "Tất cả dự án",
+    next: "Dự án tiếp theo",
+    loading: "đang mở dự án…",
   },
   notes: {
     lede: "Ghi chú kỹ thuật · backend Java",
@@ -270,47 +245,16 @@ const en: Copy = {
     stackLabel: "Working with",
     reachLabel: "Reach me",
     sidesLabel: "Go on",
-    sides: {
-      project: { t: "Project", d: "IntelliPath — a learning path built from repositories you actually committed to and postings open right now." },
-    },
+    demo: "The running system. Open it and try it.",
     cta: "Send an email",
   },
-  project: {
-    lede: "IntelliPath · 2026 · backend and team lead",
-    problem: {
-      h: "A first-year and a final-year student open the same Java roadmap and see the same thing",
-      body: [
-        "Both get the same 71 items. Nothing there knows what the reader has already done, and nothing knows what the market is currently hiring for.",
-        "IntelliPath builds the path from one person's own data: GitHub repositories they actually committed to, declared skills, and a quiz generated from those same skills. The result is held against postings that are open right now.",
-      ],
-      pull: "The system checks your commits on GitHub before a repository counts as evidence.",
-    },
-    build: {
-      h: "Three services, one database, no manual step in between",
-      body:
-        "The backend owns every decision. The Python service reads and extracts; it concludes nothing. The frontend redraws what the backend computed, so when a result is wrong there is exactly one place to open.",
-      stackLabel: "Stack",
-      partsLabel: "Key pieces",
-      parts: [
-        { n: "Authorship verification", d: "Checks the student's commits against the repository's contributor list. The verdict has three values rather than two, so a GitHub outage is never read as a false claim." },
-        { n: "LLM skill extraction", d: "Reads job descriptions, pulls out skill names, then resolves each name to exactly one catalog entry." },
-        { n: "Skill identity", d: "One canonicalisation function shared by all three write paths, so `Fast API` and `FastAPI` never become two skills." },
-        { n: "Tiered path", d: "Which nodes open and which stay locked is computed from measured ability, not from position in the tree." },
-      ],
-      cta: "View the source",
-    },
-    proof: {
-      h: "Measured",
-      lede: "This system was built to argue that evidence beats self-report, so its own page lists only what can be counted.",
-      note: "Every figure was read straight from the repository and the database. Nothing is rounded.",
-      stats: [
-        { n: "325", label: "backend tests passing", how: "./mvnw test — 0 failures, 0 errors" },
-        { n: "913", label: "job postings read by the LLM", how: "913 of 913, none skipped" },
-        { n: "4,177", label: "skill nodes in the catalog", how: "skill_nodes table" },
-        { n: "5,660", label: "skill ↔ posting links", how: "recruitment_skills table" },
-      ],
-    },
-    scroll: "Scroll to continue",
+  projects: {
+    h: "Things I have built, with what was measured",
+    intro: "Each project is told in three steps: the problem, the build, and what was measured. Every figure says where it came from.",
+    open: "Open project",
+    all: "All projects",
+    next: "Next project",
+    loading: "opening the project…",
   },
   notes: {
     lede: "Engineering notes · Java backend",

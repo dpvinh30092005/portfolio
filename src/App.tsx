@@ -70,8 +70,8 @@ export default function App() {
       </nav>
 
       <main>
-        {side === "home" && <Home lang={lang} go={go} />}
-        {side === "project" && <Project lang={lang} />}
+        {side === "home" && <Home lang={lang} />}
+        {side === "project" && <Project lang={lang} id={topic} go={go} />}
         {side === "notes" && <Notes lang={lang} topic={topic} go={go} />}
       </main>
 

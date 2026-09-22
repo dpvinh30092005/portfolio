@@ -22,6 +22,9 @@ export type Side = (typeof SIDES)[number];
  *
  * Still no hidden routes. An unknown topic falls back to the first one instead
  * of rendering an empty side, so a stale bookmark lands somewhere real.
+ *
+ * The project side reads the same segment as a project id: `#/project/jev-com-tam`.
+ * An unknown id shows the project index rather than guessing a project.
  */
 export type Route = { side: Side; topic: string | null };
 
